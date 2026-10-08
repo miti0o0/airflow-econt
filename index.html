@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="bg">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1f6aa5">
+<meta name="robots" content="noindex">
+<title>AirFlow – Товарителници Еконт</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>AirFlow – Товарителници</h1>
+  <span id="envBadge" class="badge"></span>
+</header>
+
+<main>
+  <!-- Нова товарителница -->
+  <section id="tab-create" class="tab">
+    <label for="name">Име и фамилия на получателя</label>
+    <input id="name" type="text" autocomplete="off" placeholder="Иван Петров" enterkeyhint="next">
+
+    <label for="phone">Телефон</label>
+    <input id="phone" type="tel" autocomplete="off" placeholder="0887 123 456" enterkeyhint="next">
+
+    <label for="email">Имейл</label>
+    <input id="email" type="email" autocomplete="off" autocapitalize="none" placeholder="ime@domain.bg" enterkeyhint="next">
+
+    <label for="office">Офис на Еконт</label>
+    <input id="office" type="search" autocomplete="off" placeholder="Напиши град или име на офис…" enterkeyhint="search">
+    <ul id="officeList" class="office-list" hidden></ul>
+    <div class="row muted small">
+      <span id="officesInfo"></span>
+      <button id="refreshOffices" class="link" type="button">Обнови офисите</button>
+    </div>
+
+    <label for="amount">Наложен платеж (EUR)</label>
+    <input id="amount" type="text" inputmode="decimal" autocomplete="off" placeholder="49,90" enterkeyhint="done">
+
+    <div class="card">
+      <h2>Обобщение</h2>
+      <dl id="summary"></dl>
+      <p id="summaryNote" class="warn small"></p>
+    </div>
+
+    <div class="row buttons">
+      <button id="calcBtn" class="outline" type="button">Изчисли цена</button>
+      <button id="createBtn" type="button">Създай товарителница</button>
+    </div>
+    <p id="message" class="message"></p>
+
+    <div id="result" class="card result" hidden>
+      <div class="muted small">Товарителница №</div>
+      <div id="resultNumber" class="number"></div>
+      <div id="resultInfo" class="small"></div>
+      <div class="row buttons">
+        <button id="copyBtn" type="button">Копирай номера</button>
+        <a id="pdfLink" class="button outline" target="_blank" rel="noopener">Отвори PDF</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- История -->
+  <section id="tab-history" class="tab" hidden>
+    <input id="search" type="search" placeholder="Търси по име, телефон или номер…">
+    <div class="row muted small">
+      <span id="historyCount"></span>
+      <span>
+        <button id="refreshStatuses" class="link" type="button">Обнови статусите</button> ·
+        <button id="exportCsv" class="link" type="button">Експорт CSV</button>
+      </span>
+    </div>
+    <div id="historyList"></div>
+  </section>
+
+  <!-- Настройки -->
+  <section id="tab-settings" class="tab" hidden>
+    <p id="setupNote" class="warn" hidden>Въведи веднъж данните на подателя и натисни „Запази настройките“.</p>
+
+    <div class="card">
+      <h2>Среда</h2>
+      <div class="segmented">
+        <button type="button" data-env="test">Тестова</button>
+        <button type="button" data-env="real">Реална</button>
+      </div>
+      <p class="muted small">Тестова: товарителниците не са истински. Реална: създават се истински товарителници, без вход – както от формата на econt.com.</p>
+    </div>
+
+    <div class="card">
+      <h2>Подател</h2>
+      <label for="sName">Име</label><input id="sName" type="text" autocomplete="name">
+      <label for="sPhone">Телефон</label><input id="sPhone" type="tel" autocomplete="tel">
+      <label for="sEmail">Имейл</label><input id="sEmail" type="email" autocomplete="email" autocapitalize="none">
+      <label for="sCity">Град на изпращане</label><input id="sCity" type="text">
+      <label for="sOffice">Офис на изпращане</label><select id="sOffice"></select>
+    </div>
+
+    <div class="card">
+      <h2>Пратка</h2>
+      <div class="grid3">
+        <div><label for="pCount">Брой</label><input id="pCount" type="text" inputmode="numeric"></div>
+        <div><label for="pWeight">Тегло (кг)</label><input id="pWeight" type="text" inputmode="decimal"></div>
+        <div></div>
+        <div><label for="pL">Дължина</label><input id="pL" type="text" inputmode="decimal"></div>
+        <div><label for="pW">Ширина</label><input id="pW" type="text" inputmode="decimal"></div>
+        <div><label for="pH">Височина</label><input id="pH" type="text" inputmode="decimal"></div>
+      </div>
+      <label for="pDesc">Описания (със запетая)</label><input id="pDesc" type="text">
+      <p class="muted small">Тип: колети. За всяка товарителница описанието се избира на случаен принцип.</p>
+    </div>
+
+    <div class="card">
+      <h2>Услуги и плащане</h2>
+      <label class="check"><input id="vReview" type="checkbox"> Преглед преди плащане</label>
+      <label class="check"><input id="vTest" type="checkbox"> Преглед и тест преди плащане</label>
+      <label class="check"><input id="vSms" type="checkbox"> SMS известие за получателя</label>
+      <label class="check"><input id="vEmail" type="checkbox"> Имейл известие за получателя</label>
+      <label for="vDelivery">Доставката плаща</label>
+      <select id="vDelivery"><option value="receiver">Получателят</option><option value="sender">Подателят</option></select>
+      <label for="vReturn">При отказ: доставка и връщане плаща</label>
+      <select id="vReturn"><option value="receiver">Получателят</option><option value="sender">Подателят</option></select>
+    </div>
+
+    <button id="saveSettings" type="button">Запази настройките</button>
+    <p id="settingsMessage" class="message"></p>
+    <p class="muted small">Настройките и историята се пазят само в този телефон (в браузъра). Ако изчистиш данните на браузъра, се губят.</p>
+  </section>
+</main>
+
+<nav>
+  <button type="button" data-tab="create" class="active">Нова</button>
+  <button type="button" data-tab="history">История</button>
+  <button type="button" data-tab="settings">Настройки</button>
+</nav>
+
+<script src="app.js"></script>
+</body>
+</html>
